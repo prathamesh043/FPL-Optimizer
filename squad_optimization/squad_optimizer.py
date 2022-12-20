@@ -7,6 +7,7 @@ import psycopg2
 from sqlalchemy import create_engine
 
 import fpl_optimizer_functions as fpl
+import config
 
 # FPL API URL
 url = 'https://fantasy.premierleague.com/api/bootstrap-static/'
@@ -67,12 +68,22 @@ differentials = slim_elements_df.loc[(slim_elements_df['news'] == '') & (slim_el
 # Final optimized squad
 squad = fpl.squad_optimizer(eligible_players, 'total_points')
 
+print("Optimized squad ready")
 
-# Write dataframe into PostgreSql database
 
-# establishing the connection
+##################### Loading data into Supabase #####################
+
+
+# establish connection
+
+user=config.supabase_fpl_username
+password=config.supabase_fpl_password
+host='db.pdqpnebestkagqneooty.supabase.co'
+port='5432'
+database='postgres'
+
 conn = psycopg2.connect(
-    database='template1', user='postgres', password='postgres', host='localhost', port= '5432'
+    database=database, user=user, password=password, host=host, port=port
 )
 
 # Setting auto commit true
@@ -82,7 +93,27 @@ conn.autocommit = True
 cursor = conn.cursor()
 
 # Delete the contents of the table and load the dataframe
-cursor.execute('''DROP TABLE IF EXISTS fpl_squad''')
+cursor.execute('''DROP TABLE IF EXISTS optsquads.fpl_squad''')
 
-engine = create_engine('postgresql://postgres:postgres@localhost:5432/template1')
-squad.to_sql('fpl_squad', engine)
+# Use sqlalchemy engine to write to the DB
+
+engine_url = 'postgresql://' + user + ':' + password + '@' + host + '/' + database
+
+engine = create_engine(engine_url)
+squad.to_sql('fpl_squad', engine, schema='optsquads')
+
+# Load raw FPL API data in another tabl
+
+# Delete the contents of the table and load the dataframe
+cursor.execute('''DROP TABLE IF EXISTS raw_fpl.dim_fpl_players''')
+
+# Use sqlalchemy engine to write to the DB
+
+engine_url = 'postgresql://' + user + ':' + password + '@' + host + '/' + database
+
+engine = create_engine(engine_url)
+slim_elements_df.to_sql('dim_fpl_players', engine, schema='raw_fpl')
+
+conn.close()
+
+print("Data loaded to Supabase")
