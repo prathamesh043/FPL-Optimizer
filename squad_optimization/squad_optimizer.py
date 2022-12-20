@@ -32,7 +32,7 @@ elements_df['team_name'] = elements_df.team.map(teams_df.set_index('id').name)
 
 # Filtering out only the necessary columns
 
-slim_elements_df = elements_df[['first_name', 'second_name','team_name','position','news','selected_by_percent','in_dreamteam',
+slim_elements_df = elements_df[['id','first_name','second_name','team_name','position','news','selected_by_percent','in_dreamteam',
                                 'now_cost','form','points_per_game','minutes','goals_scored','assists','clean_sheets',
                                 'goals_conceded','clean_sheets','goals_conceded','yellow_cards','red_cards','saves','bonus',
                                 'transfers_in','value_season','total_points','influence','creativity','threat','ict_index']]
@@ -100,7 +100,7 @@ cursor.execute('''DROP TABLE IF EXISTS optsquads.fpl_squad''')
 engine_url = 'postgresql://' + user + ':' + password + '@' + host + '/' + database
 
 engine = create_engine(engine_url)
-squad.to_sql('fpl_squad', engine, schema='optsquads')
+squad.to_sql('fpl_squad', engine, schema='optsquads', index=False)
 
 # Load raw FPL API data in another tabl
 
@@ -112,7 +112,7 @@ cursor.execute('''DROP TABLE IF EXISTS raw_fpl.dim_fpl_players''')
 engine_url = 'postgresql://' + user + ':' + password + '@' + host + '/' + database
 
 engine = create_engine(engine_url)
-slim_elements_df.to_sql('dim_fpl_players', engine, schema='raw_fpl')
+slim_elements_df.to_sql('dim_fpl_players', engine, schema='raw_fpl', index=False)
 
 conn.close()
 
