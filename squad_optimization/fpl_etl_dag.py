@@ -36,10 +36,10 @@ default_args = {
 ################################# define the DAG #################################
 
 fpl_etl = DAG(
-    'fpl_optimizer',
+    'fpl_etl_dag',
     default_args=default_args,
     description='Create optimal FPL squad and load into Supabase',
-    schedule_interval=timedelta(days=1),
+    schedule='0 */3 * * *',
 )
 
 ################################# python function to extract FPL data #################################
