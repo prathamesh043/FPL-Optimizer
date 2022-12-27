@@ -13,8 +13,7 @@ td {
 <table>
   <thead>
     <tr>
-        <th>First Name</th>
-        <th>Second Name</th>
+        <th>Name</th>
         <th>Team Name</th>
         <th>Position</th>
         <th>Selected By</th>
@@ -25,13 +24,12 @@ td {
     <tbody>
      {% for row in data %}    
             <tr>
-                <td>{{row[0]}}</td>
-                <td>{{row[1]}}</td>
                 <td>{{row[2]}}</td>
                 <td>{{row[3]}}</td>
                 <td>{{row[4]}}</td>
                 <td>{{row[5]}}</td>
                 <td>{{row[6]}}</td>
+                <td>{{row[7]}}</td>
             </tr>
         {% endfor %}
     </tbody>

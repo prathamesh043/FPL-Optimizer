@@ -84,7 +84,7 @@ def optimum_keepers(eligible_players, maximum_cost, opt_metric):
     for index in range(len(player_indices)):
         players = pd.concat([players, gk_df.iloc[[player_indices[index]]]])
         
-    final = players[['first_name', 'second_name', 'team_name', 'position', 'selected_by_percent', 'actual_cost', 'total_points', opt_metric]]
+    final = players[['first_name', 'second_name', 'name', 'team_name', 'position', 'selected_by_percent', 'actual_cost', 'total_points', opt_metric]]
     
     return final.loc[:,~final.columns.duplicated()].copy()
 
@@ -117,7 +117,7 @@ def optimum_defence(eligible_players, maximum_cost, opt_metric):
     for index in range(len(player_indices)):
         players = pd.concat([players, def_df.iloc[[player_indices[index]]]])
         
-    final = players[['first_name', 'second_name', 'team_name', 'position', 'selected_by_percent', 'actual_cost', 'total_points', opt_metric]]
+    final = players[['first_name', 'second_name', 'name', 'team_name', 'position', 'selected_by_percent', 'actual_cost', 'total_points', opt_metric]]
     
     return final.loc[:,~final.columns.duplicated()].copy()
 
@@ -150,7 +150,7 @@ def optimum_midfield(eligible_players, maximum_cost, opt_metric):
     for index in range(len(player_indices)):
         players = pd.concat([players, mid_df.iloc[[player_indices[index]]]])
         
-    final = players[['first_name', 'second_name', 'team_name', 'position', 'selected_by_percent', 'actual_cost', 'total_points', opt_metric]]
+    final = players[['first_name', 'second_name', 'name', 'team_name', 'position', 'selected_by_percent', 'actual_cost', 'total_points', opt_metric]]
     
     return final.loc[:,~final.columns.duplicated()].copy()
 
@@ -183,7 +183,7 @@ def optimum_attack(eligible_players, maximum_cost, opt_metric):
     for index in range(len(player_indices)):
         players = pd.concat([players, att_df.iloc[[player_indices[index]]]])
         
-    final = players[['first_name', 'second_name', 'team_name', 'position', 'selected_by_percent', 'actual_cost', 'total_points', opt_metric]]
+    final = players[['first_name', 'second_name', 'name', 'team_name', 'position', 'selected_by_percent', 'actual_cost', 'total_points', opt_metric]]
     
     return final.loc[:,~final.columns.duplicated()].copy()
 

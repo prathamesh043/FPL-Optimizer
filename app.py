@@ -14,6 +14,6 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    mycursor.execute("SELECT * FROM optsquads.fpl_squad;")
+    mycursor.execute("SELECT * FROM optimum_squads.total_points;")
     data = mycursor.fetchall()
     return render_template('index.html', data=data)
