@@ -143,14 +143,26 @@ def squad_optimizer():
     # get the optimized squad
     squad = fpl.squad_optimizer(eligible_players, 'total_points')
 
-    # Delete the contents of the table and load the dataframe
+    # open a cursor
     cursor = conn.cursor()
-    cursor.execute('''DROP TABLE IF EXISTS optsquads.fpl_squad''')
 
-    # Use sqlalchemy engine to write to the DB
+    # metrics for which the squad is to be optimized
+    optimizing_metrics = ['points_per_game','bonus','total_points','ict_index','points_per_million']
+    
+    # Delete the contents of the tables
+    for metric in optimizing_metrics:
+        table_name = 'optimum_squads.' + metric
+        drop_query = 'DROP TABLE IF EXISTS ' + table_name
+        cursor.execute(drop_query)
+
+    # sqlalchemy engine
     engine_url = 'postgresql://' + user + ':' + password + '@' + host + '/' + database
     engine = create_engine(engine_url)
-    squad.to_sql('fpl_squad', engine, schema='optsquads', index=False)
+
+    # Create individual tables for each metric
+    for metric in optimizing_metrics:
+        squad = fpl.squad_optimizer(eligible_players, metric)
+        squad.to_sql(metric, engine, schema='optimum_squads', index=False)
 
 ################################# Task 2: Load optimized squad #################################
 
