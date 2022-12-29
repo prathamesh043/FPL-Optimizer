@@ -1,37 +1,46 @@
 <!DOCTYPE html>
 <html>
+    <style>
+        html * {
+          font-size: 16px;
+          line-height: 1.625;
+          font-family: Nunito, sans-serif;
+        }
+      </style>
+
 <body>
-<style>
- 
-td {
-        width: 150px;
-        text-align: center;
-        border: 1px solid black;
-        padding: 5px;
-      }
-</style>
-<table>
-  <thead>
-    <tr>
-        <th>Name</th>
-        <th>Team Name</th>
-        <th>Position</th>
-        <th>Selected By</th>
-        <th>Actual Cost</th>
-        <th>Total Points</th>
-    </tr>
-    </thead>    
-    <tbody>
-     {% for row in data %}    
-            <tr>
-                <td>{{row[2]}}</td>
-                <td>{{row[3]}}</td>
-                <td>{{row[4]}}</td>
-                <td>{{row[5]}}</td>
-                <td>{{row[6]}}</td>
-                <td>{{row[7]}}</td>
-            </tr>
+
+    <div style="text-align: center;">
+        {% for row in data %}
+            {% if row[4] == 'Forward' %}
+                {{row[2]}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            {% endif %}
         {% endfor %}
-    </tbody>
-</table></body>
+    </div><br>
+
+    <div style="text-align: center;">
+        {% for row in data %}
+            {% if row[4] == 'Midfielder' %}
+                {{row[2]}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            {% endif %}
+        {% endfor %}
+    </div><br>
+
+    <div style="text-align: center;">
+        {% for row in data %}
+            {% if row[4] == 'Defender' %}
+                {{row[2]}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            {% endif %}
+        {% endfor %}
+    </div><br>
+
+    <div style="text-align: center;">
+        {% for row in data %}
+            {% if row[4] == 'Goalkeeper' %}
+                {{row[2]}}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            {% endif %}
+        {% endfor %}
+    </div>
+
+</body>
 </html>
