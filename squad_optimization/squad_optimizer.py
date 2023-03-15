@@ -1,13 +1,23 @@
 import requests
 import pandas as pd
 import numpy as np
-import copy
 
 import psycopg2
 from sqlalchemy import create_engine
 
 import fpl_optimizer_functions as fpl
-import config
+
+# for env variables
+import os
+from dotenv import load_dotenv, get_key
+load_dotenv()
+
+# save env variables
+SUPABASE_USER = get_key('.env', 'SUPABASE_USER')
+SUPABASE_HOST = get_key('.env', 'SUPABASE_HOST')
+SUPABASE_PASSWORD = get_key('.env', 'SUPABASE_PASSWORD')
+SUPABASE_PORT = get_key('.env', 'SUPABASE_PORT')
+SUPABASE_DB = get_key('.env', 'SUPABASE_DB')
 
 # FPL API URL
 url = 'https://fantasy.premierleague.com/api/bootstrap-static/'
@@ -67,11 +77,11 @@ print("Data processing done")
 
 
 # establish connection
-user=config.supabase_fpl_username
-password=config.supabase_fpl_password
-host='db.pdqpnebestkagqneooty.supabase.co'
-port='5432'
-database='postgres'
+user=SUPABASE_USER
+password=SUPABASE_PASSWORD
+host=SUPABASE_HOST
+port=SUPABASE_PORT
+database=SUPABASE_DB
 
 conn = psycopg2.connect(
     database=database, user=user, password=password, host=host, port=port
