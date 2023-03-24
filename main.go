@@ -1,20 +1,23 @@
 package main
 
 import (
-	"fmt"
+	"html/template"
 	"net/http"
 )
 
+var tpl *template.Template
+
 func main() {
-	http.HandleFunc("/", homeHandleFunc)
-	http.HandleFunc("/about", aboutHandleFunc)
+	tpl, _ = template.ParseGlob("templates/*.html")
+	http.HandleFunc("/", indexHandler)
+	http.HandleFunc("/about", aboutHandler)
 	http.ListenAndServe(":8080", nil)
 }
 
-func homeHandleFunc(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "FPL squad optimizer")
+func indexHandler(w http.ResponseWriter, r *http.Request) {
+	tpl.ExecuteTemplate(w, "index.html", nil)
 }
 
-func aboutHandleFunc(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Prathamesh M")
+func aboutHandler(w http.ResponseWriter, r *http.Request) {
+	tpl.ExecuteTemplate(w, "about.html", nil)
 }
