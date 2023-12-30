@@ -97,7 +97,7 @@ optimizing_metrics = ['points_per_game','bonus','total_points','ict_index','poin
 
 for metric in optimizing_metrics:
 
-    table_name = 'optimum_squads.' + metric
+    table_name = 'public.optimal_squad_' + metric
     drop_query = 'DROP TABLE IF EXISTS ' + table_name
     cursor.execute(drop_query)
 
@@ -107,21 +107,22 @@ engine = create_engine(engine_url)
 
 for metric in optimizing_metrics:
 
+    table_name = 'optimal_squad_' + metric
     squad = fpl.squad_optimizer(eligible_players, metric)
-    squad.to_sql(metric, engine, schema='optimum_squads', index=False)
+    squad.to_sql(table_name, engine, schema='public', index=False)
 
 
 # Load raw FPL API data in another table
 
 # Delete the contents of the table and load the dataframe
-cursor.execute('''DROP TABLE IF EXISTS raw_fpl.dim_fpl_players''')
+cursor.execute('''DROP TABLE IF EXISTS public.dim_fpl_players''')
 
 # Use sqlalchemy engine to write to the DB
 
 engine_url = 'postgresql://' + user + ':' + password + '@' + host + '/' + database
 
 engine = create_engine(engine_url)
-slim_elements_df.to_sql('dim_fpl_players', engine, schema='raw_fpl', index=False)
+slim_elements_df.to_sql('dim_fpl_players', engine, schema='public', index=False)
 
 conn.close()
 
