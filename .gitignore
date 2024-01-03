@@ -4,3 +4,4 @@ squad_optimization/__pycache__
 fpl_fixtures/venv
 fpl_fixtures/.env
 venv
+*/.DS_Store
