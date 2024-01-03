@@ -37,10 +37,10 @@ elements_df['team_name'] = elements_df.team.map(teams_df.set_index('id').name)
 
 
 # Filtering out only the necessary columns
-slim_elements_df = elements_df[['id','first_name','second_name','web_name','team_name','position','news','selected_by_percent','in_dreamteam',
+slim_elements_df = elements_df[['id', 'first_name','second_name','web_name','team_name','position','news','selected_by_percent','in_dreamteam',
                                 'now_cost','form','points_per_game','minutes','goals_scored','assists','clean_sheets',
-                                'goals_conceded','clean_sheets','goals_conceded','yellow_cards','red_cards','saves','bonus',
-                                'transfers_in','value_season','total_points','influence','creativity','threat','ict_index']]
+                                'goals_conceded','yellow_cards','red_cards','saves','bonus',
+                                'transfers_in','starts','value_season','total_points','influence','creativity','threat','ict_index']]
 
 slim_elements_df.rename(columns = {'web_name':'name'}, inplace = True)
 
