@@ -109,9 +109,7 @@ for metric in optimizing_metrics:
 
     table_name = 'optimal_squad_' + metric
     squad = fpl.squad_optimizer(eligible_players, metric)
-    squad = pd.merge(squad, slim_elements_df[['name', 'id']], on=['first_name','second_name'], how='left')
-    id = squad.pop('id')
-    squad.insert(0, 'id', id)
+    squad = pd.merge(squad, slim_elements_df[['first_name', 'second_name', 'id']], on=['first_name', 'second_name'], how='left')
     squad.to_sql(table_name, engine, schema='public', index=False)
 
 
