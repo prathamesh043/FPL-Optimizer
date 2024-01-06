@@ -41,6 +41,10 @@ fixtures_df['away_team'] = pd.merge(fixtures_df, teams_df, left_on='team_a', rig
 fixtures_df = fixtures_df[['id', 'event', 'finished', 'kickoff_time', 'team_a', 'team_a_score', 'team_h', 'team_h_score',
                            'team_h_difficulty', 'team_a_difficulty', 'home_team', 'away_team']]
 
+# convert kickoff time to timestamp
+fixtures_df['kickoff_time'] = pd.to_datetime(fixtures_df['kickoff_time'])
+
+# rename columns
 fixtures_df = fixtures_df.rename(columns={'id': 'match_id', 'event': 'gameweek', 'team_a': 'away_team_id', 'team_h': 'home_team_id'})
 
 # Load into Supabase
