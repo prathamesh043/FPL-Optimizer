@@ -93,7 +93,7 @@ conn.autocommit = True
 # Creating a cursor object using the cursor() method
 cursor = conn.cursor()
 
-optimizing_metrics = ['points_per_game','bonus','total_points','ict_index','points_per_million']
+optimizing_metrics = ['points_per_game','bonus','total_points','ict_index','points_per_million','form']
 
 for metric in optimizing_metrics:
 
