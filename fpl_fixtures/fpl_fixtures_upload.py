@@ -68,10 +68,6 @@ cursor = conn.cursor()
 drop_query = 'DROP TABLE IF EXISTS public.dim_fpl_fixtures;'
 cursor.execute(drop_query)
 
-# close the cursor and connection
-cursor.close()
-conn.close()
-
 # Create SQL alchemy engine
 engine_url = 'postgresql://' + SUPABASE_USER + ':' + SUPABASE_PASSWORD + '@' + SUPABASE_HOST + '/' + SUPABASE_DB
 engine = create_engine(engine_url)
@@ -84,4 +80,90 @@ fixtures_df.to_sql(
     index=False
 )
 
-print('Data uploaded to Supabase')
+print('Main fixtures data uploaded')
+
+############################## create fixtures table at a player level ##############################
+
+# drop the existing table
+drop_players_fixtures_query = 'DROP TABLE IF EXISTS public.players_fixtures;'
+cursor.execute(drop_players_fixtures_query)
+
+# query that gets next 5 fixtures at player level 
+players_fixtures_query = """with home_fixtures as 
+                            (
+                                select 
+                                    a.id
+                                    ,a.name
+                                    ,'Home' as fixture_home_away
+                                    ,b.away_team as opponent
+                                    ,b.kickoff_time
+                                    ,b.gameweek
+                                    ,b.team_h_difficulty as fixture_difficulty_rating
+                                from 
+                                    public.dim_fpl_players as a
+                                    left join public.dim_fpl_fixtures as b on a.team_name = b.home_team
+                                where
+                                    finished = False
+                            )
+                            
+                            , away_fixtures as 
+                            (
+                                select 
+                                    a.id
+                                    ,a.name
+                                    ,'Away' as fixture_home_away
+                                    ,b.home_team as opponent
+                                    ,b.kickoff_time
+                                    ,b.gameweek
+                                    ,b.team_a_difficulty as fixture_difficulty_rating
+                                    
+                                from 
+                                    public.dim_fpl_players as a
+                                    left join public.dim_fpl_fixtures as b on a.team_name = b.away_team
+                                where
+                                    finished = False
+                            )
+
+                            , final as 
+                            (
+                                select
+                                    *
+                                    ,row_number() over (partition by id order by kickoff_time) as fixture_rank
+                                from
+                                    (
+                                        select * from home_fixtures
+                                        union all
+                                        select * from away_fixtures
+                                    ) as a
+                                order by
+                                    kickoff_time
+                            )
+                            
+                            select
+                                *
+                            from
+                                final
+                            where
+                                fixture_rank <= 5 
+                                and kickoff_time is not null
+                            ;"""
+
+# run and store the query results as a dataframe
+cursor.execute(players_fixtures_query)
+players_fixtures_df = pd.DataFrame(cursor.fetchall(), columns = ['id', 'name', 'fixture_home_away', 'opponent', 'kickoff_time', 
+                                                                 'gameweek', 'fixture_difficulty_rating', 'fixture_rank'])
+
+
+# Load the table into supabase
+players_fixtures_df.to_sql(
+    'players_fixtures',
+    engine,
+    schema='public',
+    index=False
+)
+
+# close the cursor and connection
+cursor.close()
+conn.close()
+
+print('Players fixtures data uploaded')
