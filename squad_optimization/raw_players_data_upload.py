@@ -1,11 +1,7 @@
 import requests
 import pandas as pd
-import numpy as np
-
 import psycopg2
 from sqlalchemy import create_engine
-
-import fpl_optimizer_functions as fpl
 
 # for env variables
 import os
@@ -44,6 +40,7 @@ slim_elements_df = elements_df[['id', 'first_name','second_name','web_name','tea
 
 slim_elements_df.rename(columns = {'web_name':'name'}, inplace = True)
 
+
 # numeric columns:
 numeric_cols = ['selected_by_percent','form','points_per_game','value_season','influence','creativity','threat','ict_index']
 
@@ -64,27 +61,9 @@ slim_elements_df['ga_per_90_mins'] = (slim_elements_df['goals_scored']+slim_elem
 slim_elements_df['goal_contributions'] = (slim_elements_df['goals_scored']+slim_elements_df['assists'])
 slim_elements_df['points_per_million'] = slim_elements_df['total_points']/slim_elements_df['actual_cost']
 
-# eligible players
-eligible_players = slim_elements_df[slim_elements_df['news'] == '']
-
-# create a dataframe with only differentials: owned by less than 20%
-differentials = slim_elements_df.loc[(slim_elements_df['news'] == '') & (slim_elements_df['selected_by_percent'] <= 20)]
-
-print("Data processing done")
-
-
-##################### Loading data into Supabase #####################
-
-
-# establish connection
-user=SUPABASE_USER
-password=SUPABASE_PASSWORD
-host=SUPABASE_HOST
-port=SUPABASE_PORT
-database=SUPABASE_DB
-
+# Connect to Supabase
 conn = psycopg2.connect(
-    database=database, user=user, password=password, host=host, port=port
+    database=SUPABASE_DB, user=SUPABASE_USER, password=SUPABASE_PASSWORD, host=SUPABASE_HOST, port=SUPABASE_PORT
 )
 
 # Setting auto commit true
@@ -93,25 +72,16 @@ conn.autocommit = True
 # Creating a cursor object using the cursor() method
 cursor = conn.cursor()
 
-optimizing_metrics = ['points_per_game','bonus','total_points','ict_index','points_per_million','form']
+# drop existing players table
+drop_query = 'DROP TABLE IF EXISTS public.dim_fpl_players;'
+cursor.execute(drop_query)
 
-for metric in optimizing_metrics:
-
-    table_name = 'public.optimal_squad_' + metric
-    drop_query = 'DROP TABLE IF EXISTS ' + table_name
-    cursor.execute(drop_query)
-
-engine_url = 'postgresql://' + user + ':' + password + '@' + host + '/' + database
+# create SQL alchemy engine
+engine_url = 'postgresql://' + SUPABASE_USER + ':' + SUPABASE_PASSWORD + '@' + SUPABASE_HOST + '/' + SUPABASE_DB
 engine = create_engine(engine_url)
 
-
-for metric in optimizing_metrics:
-
-    table_name = 'optimal_squad_' + metric
-    squad = fpl.squad_optimizer(eligible_players, metric)
-    squad = pd.merge(squad, slim_elements_df[['first_name', 'second_name', 'id']], on=['first_name', 'second_name'], how='left')
-    squad.to_sql(table_name, engine, schema='public', index=False)
-
+# upload to Supabase
+slim_elements_df.to_sql('dim_fpl_players', engine, schema='public', index=False)
 
 conn.close()
 
