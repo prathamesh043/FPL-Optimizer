@@ -61,6 +61,12 @@ slim_elements_df['ga_per_90_mins'] = (slim_elements_df['goals_scored']+slim_elem
 slim_elements_df['goal_contributions'] = (slim_elements_df['goals_scored']+slim_elements_df['assists'])
 slim_elements_df['points_per_million'] = slim_elements_df['total_points']/slim_elements_df['actual_cost']
 
+# create percentile columns for specific metrics
+percentile_metrics = ['bonus', 'form', 'ict_index', 'points_per_game', 'points_per_million', 'total_points', 'goals_scored', 'assists', 'clean_sheets']
+
+for metric in percentile_metrics:
+    slim_elements_df[metric + '_percentile'] = slim_elements_df.groupby('position')[metric].rank(pct=True)
+
 # Connect to Supabase
 conn = psycopg2.connect(
     database=SUPABASE_DB, user=SUPABASE_USER, password=SUPABASE_PASSWORD, host=SUPABASE_HOST, port=SUPABASE_PORT
