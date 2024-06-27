@@ -30,6 +30,8 @@ teams_df = pd.DataFrame(json['teams'])
 elements_df['position'] = elements_df.element_type.map(elements_types_df.set_index('id').singular_name)
 elements_df['team_name'] = elements_df.team.map(teams_df.set_index('id').name)
 
+def convert_filename(string):
+    return string.lower().replace(" ", "_")
 
 
 # Filtering out only the necessary columns
@@ -60,6 +62,9 @@ slim_elements_df['points_per_90_mins'] = slim_elements_df['total_points']/slim_e
 slim_elements_df['ga_per_90_mins'] = (slim_elements_df['goals_scored']+slim_elements_df['assists'])/slim_elements_df['games_completed']
 slim_elements_df['goal_contributions'] = (slim_elements_df['goals_scored']+slim_elements_df['assists'])
 slim_elements_df['points_per_million'] = slim_elements_df['total_points']/slim_elements_df['actual_cost']
+
+# path to team image icon
+slim_elements_df['image_path'] = '/' + slim_elements_df['team_name'].apply(convert_filename) + '.svg'
 
 # create percentile columns for specific metrics
 percentile_metrics = ['bonus', 'form', 'ict_index', 'points_per_game', 'points_per_million', 'total_points', 'goals_scored', 'assists', 'clean_sheets']
