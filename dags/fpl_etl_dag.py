@@ -1,5 +1,6 @@
 # This airflow dag takes data from the FPL API, cleans it and runs it through the optimizer functions
 
+import logging
 from datetime import timedelta
 
 import pandas as pd
@@ -15,6 +16,7 @@ import raw_players_data_upload as upload
 from airflow.providers.standard.operators.python import PythonOperator
 from airflow.sdk import DAG
 
+logger = logging.getLogger(__name__)
 
 ################################ DAG arguments ################################
 
@@ -22,9 +24,7 @@ default_args = {
     'owner': 'Prathamesh',
     'email': ['prathamesh.murugesan@gmail.com'],
     'email_on_failure': False,
-    'email_on_retry': False,
-    'retries': 1,
-    'retry_delay': timedelta(seconds=15),
+    'email_on_retry': False
 }
 
 ################################# define the DAG #################################
@@ -102,6 +102,7 @@ def squad_optimizer():
     for metric in optimizing_metrics:
         squad = fpl.squad_optimizer(eligible_players, metric)
         fpl.load_optimal_squad(squad, metric, engine)
+        logger.info("Loaded optimal squad for metric '%s' to Supabase", metric)
 
 ################################# Task 2: Load optimized squad #################################
 
