@@ -279,3 +279,19 @@ def squad_optimizer(eligible_players, opt_metric):
         raise ValueError(f"Expected 15 players, got {len(final_squad_df)}.")
 
     return final_squad_df
+
+
+OUTPUT_SCHEMA = 'analytics_fpl'
+OUTPUT_TABLE_PREFIX = 'optimal_squad_'
+
+
+def load_optimal_squad(squad_df, metric, engine):
+    """
+    Load an optimized squad into analytics_fpl.optimal_squad_<metric>,
+    replacing the table if it already exists.
+    """
+    table_name = OUTPUT_TABLE_PREFIX + metric
+    with engine.begin() as connection:
+        connection.exec_driver_sql(f'CREATE SCHEMA IF NOT EXISTS {OUTPUT_SCHEMA}')
+    squad_df.to_sql(table_name, engine, schema=OUTPUT_SCHEMA, index=False, if_exists='replace')
+    return f'{OUTPUT_SCHEMA}.{table_name}'

@@ -84,7 +84,7 @@ conn.autocommit = True
 cursor = conn.cursor()
 
 # drop existing players table
-drop_query = 'DROP TABLE IF EXISTS public.dim_fpl_players;'
+drop_query = 'DROP TABLE IF EXISTS analytics_fpl.dim_fpl_players;'
 cursor.execute(drop_query)
 
 # create SQL alchemy engine
@@ -92,7 +92,7 @@ engine_url = 'postgresql://' + SUPABASE_USER + ':' + SUPABASE_PASSWORD + '@' + S
 engine = create_engine(engine_url)
 
 # upload to Supabase
-slim_elements_df.to_sql('dim_fpl_players', engine, schema='public', index=False)
+slim_elements_df.to_sql('dim_fpl_players', engine, schema='analytics_fpl', index=False)
 
 conn.close()
 
