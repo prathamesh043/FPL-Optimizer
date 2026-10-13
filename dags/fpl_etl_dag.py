@@ -42,10 +42,10 @@ fpl_etl = DAG(
 
 def fpl_extract_and_clean():
 
-    # fetch + clean the players data (shared logic lives in raw_players_data_upload)
-    slim_elements_df = upload.fetch_players_df()
+    # fetch the raw players data (no transformations; logic lives in raw_players_data_upload)
+    raw_players_df = upload.fetch_raw_players_df()
 
-    # connect to Supabase and replace analytics_fpl.dim_fpl_players
+    # connect to Supabase and replace raw_fpl.players
     engine = upload.make_engine(
         config.supabase_fpl_username,
         config.supabase_fpl_password,
@@ -53,7 +53,7 @@ def fpl_extract_and_clean():
         config.supabase_fpl_port,
         config.supabase_fpl_db,
     )
-    upload.load_players_df(slim_elements_df, engine)
+    upload.load_raw_players_df(raw_players_df, engine)
 
 ################################# Task 1: Extract and load #################################
 

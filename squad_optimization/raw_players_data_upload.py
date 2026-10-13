@@ -14,6 +14,18 @@ COLUMNS = [
     'influence', 'creativity', 'threat', 'ict_index',
 ]
 
+RAW_SCHEMA = 'raw_fpl'
+RAW_TABLE = 'players'
+
+# fields ingested as-is from data['elements'] (no renames, casts, lookups or derived columns)
+RAW_COLUMNS = [
+    'id', 'first_name', 'second_name', 'web_name', 'news', 'selected_by_percent',
+    'in_dreamteam', 'now_cost', 'form', 'points_per_game', 'minutes', 'goals_scored',
+    'assists', 'clean_sheets', 'goals_conceded', 'yellow_cards', 'red_cards', 'saves',
+    'bonus', 'transfers_in', 'starts', 'value_season', 'total_points', 'influence',
+    'creativity', 'threat', 'ict_index',
+]
+
 NUMERIC_COLS = ['selected_by_percent', 'form', 'points_per_game', 'value_season',
                 'influence', 'creativity', 'threat', 'ict_index']
 
@@ -62,6 +74,20 @@ def fetch_players_df():
         df[metric + '_percentile'] = df.groupby('position')[metric].rank(pct=True)
 
     return df
+
+
+def fetch_raw_players_df():
+    """Pull bootstrap-static from the FPL API and return only the raw player columns, untransformed."""
+    data = requests.get(FPL_API_URL).json()
+    return pd.DataFrame(data['elements'])[RAW_COLUMNS]
+
+
+def load_raw_players_df(df, engine):
+    """Replace raw_fpl.players with the given DataFrame."""
+    with engine.begin() as conn:
+        conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS {RAW_SCHEMA}'))
+        conn.execute(text(f'DROP TABLE IF EXISTS {RAW_SCHEMA}.{RAW_TABLE}'))
+    df.to_sql(RAW_TABLE, engine, schema=RAW_SCHEMA, index=False)
 
 
 def make_engine(user, password, host, port, database):
