@@ -88,6 +88,20 @@ docker compose exec airflow-apiserver airflow dags list
 docker compose exec airflow-apiserver airflow dags trigger fpl_etl_dag
 ```
 
+## When do I need to restart?
+
+| Change | Action needed |
+|---|---|
+| Edit a file in `dags/` | None. Airflow re-parses it automatically (mounted volume). |
+| Edit `.env` (e.g. `SUPABASE_*`) | Recreate containers: `docker compose up -d --force-recreate` |
+| Edit `docker-compose.yaml` | `docker compose up -d` (changed services are recreated) |
+| Edit `requirements-airflow.txt` or `Dockerfile` | Rebuild, then restart: `docker compose build && docker compose up -d` |
+| Edit `squad_optimization/` modules | Usually none for new task runs. Restart if a module is imported by the DAG file at parse time: `docker compose restart airflow-dag-processor` |
+| Airflow is unresponsive or stuck | `docker compose restart` |
+| Airflow upgrade or corrupted metadata DB | Full reset (see "Upgrading from Airflow 2.x") |
+
+Note: `docker compose restart` does **not** reload `.env`. Env vars are fixed when a container is created, so use `up -d --force-recreate` instead.
+
 ## Notes
 
 - Airflow 3 replaces the webserver with `airflow-apiserver` and adds a separate `airflow-dag-processor`.
