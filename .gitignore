@@ -13,3 +13,4 @@ plugins/*
 config/
 .cursor/rules/
 .DS_Store
+.venv-dbt/
