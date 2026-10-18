@@ -12,6 +12,7 @@ from sqlalchemy import create_engine
 import config
 import fpl_optimizer_functions as fpl
 import raw_players_data_upload as upload
+import raw_fixtures_data_upload as fixtures_upload
 
 from airflow.providers.standard.operators.python import PythonOperator
 from airflow.sdk import DAG
@@ -64,6 +65,26 @@ extract_and_load = PythonOperator(
     dag=fpl_etl,
 )
 
+################################# Task: Load raw fixtures #################################
+
+def fpl_fixtures_extract_and_load():
+    fixtures_df = fixtures_upload.fetch_raw_fixtures()
+    engine = fixtures_upload.make_engine(
+        config.supabase_fpl_username,
+        config.supabase_fpl_password,
+        config.supabase_fpl_host,
+        config.supabase_fpl_port,
+        config.supabase_fpl_db,
+    )
+    fixtures_upload.load_raw_fixtures(fixtures_df, engine)
+    logger.info("Loaded %d fixtures to %s.%s", len(fixtures_df), fixtures_upload.RAW_SCHEMA, fixtures_upload.FIXTURES_TABLE)
+
+extract_and_load_fixtures = PythonOperator(
+    task_id='extract_and_load_fixtures',
+    python_callable=fpl_fixtures_extract_and_load,
+    dag=fpl_etl,
+)
+
 ################################# squad optimizer function #################################
 
 def squad_optimizer():
@@ -113,3 +134,4 @@ load_opt_squad = PythonOperator(
 ################################# Task pipeline #################################
 
 extract_and_load >> load_opt_squad
+extract_and_load_fixtures 

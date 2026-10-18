@@ -73,7 +73,7 @@ def _typecast(df):
     for col in df.columns:
         values = df[col].dropna()
         if values.map(lambda v: isinstance(v, (list, dict))).any():
-            dtypes[col] = JSONB
+            dtypes[col] = JSONB()
         elif values.map(lambda v: isinstance(v, str)).all() and not values.empty:
             try:
                 df[col] = pd.to_numeric(df[col])

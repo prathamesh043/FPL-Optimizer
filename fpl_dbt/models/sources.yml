@@ -74,3 +74,47 @@ sources:
             data_tests:
               - unique
               - not_null
+
+      - name: fixtures
+        description: One row per fixture, loaded as-is from the FPL fixtures API by the extract_and_load_fixtures Airflow task.
+        columns:
+          - name: id
+            data_tests:
+              - unique
+              - not_null
+          - name: team_h
+            description: Home team; foreign key to teams.id.
+            data_tests:
+              - relationships:
+                  arguments:
+                    to: source('raw_fpl', 'teams')
+                    field: id
+          - name: team_a
+            description: Away team; foreign key to teams.id.
+            data_tests:
+              - relationships:
+                  arguments:
+                    to: source('raw_fpl', 'teams')
+                    field: id
+
+      - name: fixtures
+        description: One row per fixture, loaded as-is from the FPL fixtures API by the extract_and_load_fixtures Airflow task.
+        columns:
+          - name: id
+            data_tests:
+              - unique
+              - not_null
+          - name: team_h
+            description: Home team; foreign key to teams.id.
+            data_tests:
+              - relationships:
+                  arguments:
+                    to: source('raw_fpl', 'teams')
+                    field: id
+          - name: team_a
+            description: Away team; foreign key to teams.id.
+            data_tests:
+              - relationships:
+                  arguments:
+                    to: source('raw_fpl', 'teams')
+                    field: id

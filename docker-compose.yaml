@@ -26,8 +26,8 @@ x-airflow-common: &airflow-common
     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
     AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
     # Project modules (config, fpl_optimizer_functions)
-    PYTHONPATH: /opt/airflow/squad_optimization
-    # Supabase credentials used by squad_optimization/config.py
+    PYTHONPATH: /opt/airflow/fpl_raw_data_ingestion:/opt/airflow/fpl_squad_optimization:/opt/airflow/fpl_fixtures
+    # Supabase credentials used by fpl_squad_optimization/config.py
     SUPABASE_USER: ${SUPABASE_USER:-}
     SUPABASE_PASSWORD: ${SUPABASE_PASSWORD:-}
     SUPABASE_HOST: ${SUPABASE_HOST:-}
@@ -35,7 +35,9 @@ x-airflow-common: &airflow-common
     SUPABASE_DB: ${SUPABASE_DB:-postgres}
   volumes:
     - ./dags:/opt/airflow/dags
-    - ./squad_optimization:/opt/airflow/squad_optimization
+    - ./fpl_raw_data_ingestion:/opt/airflow/fpl_raw_data_ingestion
+    - ./fpl_squad_optimization:/opt/airflow/fpl_squad_optimization
+    - ./fpl_fixtures:/opt/airflow/fpl_fixtures
     - ./logs:/opt/airflow/logs
     - ./config:/opt/airflow/config
     - ./plugins:/opt/airflow/plugins
