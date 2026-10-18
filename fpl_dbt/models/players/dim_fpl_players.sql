@@ -2,7 +2,7 @@ select
     e.id
     ,e.first_name
     ,e.second_name
-    ,e.web_name
+    ,e.web_name as name
     ,t.name as team_name
     ,t.short_name as team_short_name
     ,p.singular_name as position
