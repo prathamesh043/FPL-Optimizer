@@ -29,6 +29,11 @@ select
     ,e.creativity
     ,e.threat
     ,e.ict_index
+    ,rank() over (order by e.total_points desc) as total_points_rank
+    ,rank() over (order by e.form desc) as form_percentile
+    ,rank() over (order by e.goals_scored desc) as goals_scored_percentile
+    ,rank() over (order by e.assists desc) as assists_percentile
+    ,rank() over (order by e.clean_sheets desc) as clean_sheets_percentile
 from
     {{ source('raw_fpl', 'elements') }} as e
     left join {{ source('raw_fpl', 'teams') }} as t
