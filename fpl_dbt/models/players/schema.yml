@@ -1,3 +1,10 @@
 
 version: 2
 
+models:
+  - name: dim_fpl_players
+    columns:
+      - name: id
+        data_tests:
+          - unique
+          - not_null
