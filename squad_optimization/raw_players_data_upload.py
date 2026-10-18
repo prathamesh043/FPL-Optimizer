@@ -1,6 +1,7 @@
 import requests
 import pandas as pd
 from sqlalchemy import create_engine, text
+from sqlalchemy.dialects.postgresql import JSONB
 
 FPL_API_URL = 'https://fantasy.premierleague.com/api/bootstrap-static/'
 PLAYERS_SCHEMA = 'analytics_fpl'
@@ -15,16 +16,6 @@ COLUMNS = [
 ]
 
 RAW_SCHEMA = 'raw_fpl'
-RAW_TABLE = 'players'
-
-# fields ingested as-is from data['elements'] (no renames, casts, lookups or derived columns)
-RAW_COLUMNS = [
-    'id', 'first_name', 'second_name', 'web_name', 'news', 'selected_by_percent',
-    'in_dreamteam', 'now_cost', 'form', 'points_per_game', 'minutes', 'goals_scored',
-    'assists', 'clean_sheets', 'goals_conceded', 'yellow_cards', 'red_cards', 'saves',
-    'bonus', 'transfers_in', 'starts', 'value_season', 'total_points', 'influence',
-    'creativity', 'threat', 'ict_index',
-]
 
 NUMERIC_COLS = ['selected_by_percent', 'form', 'points_per_game', 'value_season',
                 'influence', 'creativity', 'threat', 'ict_index']
@@ -76,18 +67,54 @@ def fetch_players_df():
     return df
 
 
-def fetch_raw_players_df():
-    """Pull bootstrap-static from the FPL API and return only the raw player columns, untransformed."""
-    data = requests.get(FPL_API_URL).json()
-    return pd.DataFrame(data['elements'])[RAW_COLUMNS]
+def _typecast(df):
+    """Cast numeric strings to numbers; nested lists/dicts are stored as JSONB."""
+    dtypes = {}
+    for col in df.columns:
+        values = df[col].dropna()
+        if values.map(lambda v: isinstance(v, (list, dict))).any():
+            dtypes[col] = JSONB
+        elif values.map(lambda v: isinstance(v, str)).all() and not values.empty:
+            try:
+                df[col] = pd.to_numeric(df[col])
+            except (ValueError, TypeError):
+                pass
+    return df, dtypes
 
 
-def load_raw_players_df(df, engine):
-    """Replace raw_fpl.players with the given DataFrame."""
+def fetch_raw_tables():
+    """Pull bootstrap-static and return {api_key: DataFrame} for every list in the response, untransformed."""
+    response = requests.get(FPL_API_URL)
+    response.raise_for_status()
+    data = response.json()
+    return {key: pd.DataFrame(value) for key, value in data.items() if isinstance(value, list)}
+
+
+def load_raw_tables(tables, engine):
+    """Load each DataFrame into a staging table, then swap it into raw_fpl.<api_key>.
+
+    Everything runs in one transaction: the target table is never dropped, and a
+    failure rolls back (including the staging tables), leaving existing data intact.
+    """
     with engine.begin() as conn:
         conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS {RAW_SCHEMA}'))
-        conn.execute(text(f'DROP TABLE IF EXISTS {RAW_SCHEMA}.{RAW_TABLE}'))
-    df.to_sql(RAW_TABLE, engine, schema=RAW_SCHEMA, index=False)
+        for name, df in tables.items():
+            df, dtypes = _typecast(df)
+            staging = f'{name}_staging'
+            target = f'{RAW_SCHEMA}.{name}'
+            stage = f'{RAW_SCHEMA}.{staging}'
+
+            conn.execute(text(f'DROP TABLE IF EXISTS {stage}'))
+            df.to_sql(staging, conn, schema=RAW_SCHEMA, index=False, dtype=dtypes)
+
+            exists = conn.execute(text('SELECT to_regclass(:t)'), {'t': target}).scalar()
+            if exists:
+                cols = ', '.join(f'"{c}"' for c in df.columns)
+                conn.execute(text(f'TRUNCATE TABLE {target}'))
+                conn.execute(text(f'INSERT INTO {target} ({cols}) SELECT {cols} FROM {stage}'))
+                conn.execute(text(f'DROP TABLE {stage}'))
+            else:
+                conn.execute(text(f'ALTER TABLE {stage} RENAME TO {name}'))
 
 
 def make_engine(user, password, host, port, database):

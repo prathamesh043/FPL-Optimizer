@@ -40,12 +40,12 @@ fpl_etl = DAG(
 
 ################################# python function to extract FPL data #################################
 
-def fpl_extract_and_clean():
+def fpl_extract_and_load():
 
-    # fetch the raw players data (no transformations; logic lives in raw_players_data_upload)
-    raw_players_df = upload.fetch_raw_players_df()
+    # fetch every table in the bootstrap-static response as-is (transformations happen in dbt)
+    raw_tables = upload.fetch_raw_tables()
 
-    # connect to Supabase and replace raw_fpl.players
+    # connect to Supabase and replace raw_fpl.<table> for each API table
     engine = upload.make_engine(
         config.supabase_fpl_username,
         config.supabase_fpl_password,
@@ -53,13 +53,14 @@ def fpl_extract_and_clean():
         config.supabase_fpl_port,
         config.supabase_fpl_db,
     )
-    upload.load_raw_players_df(raw_players_df, engine)
+    upload.load_raw_tables(raw_tables, engine)
+    logger.info("Loaded raw tables to %s: %s", upload.RAW_SCHEMA, ', '.join(raw_tables))
 
 ################################# Task 1: Extract and load #################################
 
 extract_and_load = PythonOperator(
     task_id='extract_and_load',
-    python_callable=fpl_extract_and_clean,
+    python_callable=fpl_extract_and_load,
     dag=fpl_etl,
 )
 
