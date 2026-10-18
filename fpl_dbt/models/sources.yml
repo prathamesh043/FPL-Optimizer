@@ -1,0 +1,76 @@
+version: 2
+
+sources:
+  - name: raw_fpl
+    description: Raw FPL bootstrap-static API output, loaded as-is by the extract_and_load Airflow task.
+    schema: raw_fpl
+    tables:
+      - name: elements
+        description: One row per player.
+        columns:
+          - name: id
+            data_tests:
+              - unique
+              - not_null
+          - name: element_type
+            description: Player position; foreign key to element_types.id.
+            data_tests:
+              - relationships:
+                  arguments:
+                    to: source('raw_fpl', 'element_types')
+                    field: id
+          - name: team
+            description: Player's team; foreign key to teams.id.
+            data_tests:
+              - relationships:
+                  arguments:
+                    to: source('raw_fpl', 'teams')
+                    field: id
+
+      - name: teams
+        description: One row per Premier League team.
+        columns:
+          - name: id
+            data_tests:
+              - unique
+              - not_null
+
+      - name: element_types
+        description: One row per player position (GKP, DEF, MID, FWD).
+        columns:
+          - name: id
+            data_tests:
+              - unique
+              - not_null
+
+      - name: events
+        description: One row per gameweek.
+        columns:
+          - name: id
+            data_tests:
+              - unique
+              - not_null
+
+      - name: phases
+        description: Season phases (overall and monthly) as ranges of gameweeks.
+        columns:
+          - name: id
+            data_tests:
+              - unique
+              - not_null
+
+      - name: chips
+        description: One row per chip available in the game.
+        columns:
+          - name: id
+            data_tests:
+              - unique
+              - not_null
+
+      - name: element_stats
+        description: Labels for player stat fields.
+        columns:
+          - name: name
+            data_tests:
+              - unique
+              - not_null
