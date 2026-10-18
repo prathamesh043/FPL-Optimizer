@@ -130,12 +130,13 @@ def optimum_by_position(eligible_players, maximum_cost, opt_metric, position, co
 
     pos_df = eligible_players[eligible_players['position'] == position].reset_index(drop=True)
     players = pos_df.index.tolist()
-    player_costs = pos_df['now_cost'].astype(int).tolist()
+    # `cost` is in £m (e.g. 6.5); the knapsack needs integer tenths
+    player_costs = (pos_df['cost'].astype(float) * 10).round().astype(int).tolist()
     player_values = adjust_player_values(pos_df[opt_metric].fillna(0).tolist())
 
     empty_cols = [
         'first_name', 'second_name', 'name', 'team_name', 'team_short_name',
-        'position', 'selected_by_percent', 'actual_cost', 'total_points', opt_metric
+        'position', 'selected_by_percent', 'cost', 'total_points', opt_metric
     ]
 
     if len(players) < count:
@@ -236,7 +237,7 @@ def best_cost_breakdown(eligible_players, opt_metric):
             continue
 
         final = pd.concat([gk, dfnc, mid, att])
-        total_cost = final['actual_cost'].sum()
+        total_cost = final['cost'].sum()
         optimized_metric = final[opt_metric].sum()
         cost_details = [costs, total_cost, optimized_metric, len(final)]
 

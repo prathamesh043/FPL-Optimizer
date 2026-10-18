@@ -89,11 +89,8 @@ def squad_optimizer():
     # get the optimized squad
     squad = fpl.squad_optimizer(eligible_players, 'total_points')
 
-    # open a cursor
-    cursor = conn.cursor()
-
     # metrics for which the squad is to be optimized
-    optimizing_metrics = ['points_per_game','bonus','total_points','ict_index','points_per_million']
+    optimizing_metrics = ['points_per_game','bonus','total_points','ict_index','form']
 
     # sqlalchemy engine
     engine_url = 'postgresql://' + user + ':' + password + '@' + host + '/' + database
