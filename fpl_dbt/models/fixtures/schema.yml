@@ -1,0 +1,10 @@
+
+version: 2
+
+models:
+  - name: dim_fpl_fixtures
+    columns:
+      - name: fixture_id
+        data_tests:
+          - unique
+          - not_null
