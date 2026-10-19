@@ -1,5 +1,5 @@
 select
-    e.id
+    e.id as player_id
     ,e.first_name
     ,e.second_name
     ,e.web_name as name
