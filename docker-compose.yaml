@@ -23,6 +23,7 @@ x-airflow-common: &airflow-common
     # Workers/scheduler talk to the Execution API (Airflow 3 architecture)
     AIRFLOW__CORE__EXECUTION_API_SERVER_URL: 'http://airflow-apiserver:8080/execution/'
     AIRFLOW__API_AUTH__JWT_SECRET: ${AIRFLOW__API_AUTH__JWT_SECRET:-fpl-optimizer-local-jwt-secret}
+    AIRFLOW__API_AUTH__JWT_ISSUER: 'fpl-optimizer-airflow'
     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
     AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
     # Project modules (config, fpl_optimizer_functions)
@@ -38,6 +39,7 @@ x-airflow-common: &airflow-common
     - ./fpl_raw_data_ingestion:/opt/airflow/fpl_raw_data_ingestion
     - ./fpl_squad_optimization:/opt/airflow/fpl_squad_optimization
     - ./fpl_fixtures:/opt/airflow/fpl_fixtures
+    - ./fpl_dbt:/opt/airflow/fpl_dbt
     - ./logs:/opt/airflow/logs
     - ./config:/opt/airflow/config
     - ./plugins:/opt/airflow/plugins
