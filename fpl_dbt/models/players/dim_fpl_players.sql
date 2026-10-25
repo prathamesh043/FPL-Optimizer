@@ -4,6 +4,7 @@ select
     ,e.second_name
     ,e.web_name as name
     ,t.name as team_name
+    ,'/'||replace(lower(t.name), ' ', '_')||'.svg' as image_path
     ,t.short_name as team_short_name
     ,p.singular_name as position
     ,p.singular_name_short as position_short
