@@ -1,0 +1,12 @@
+fpl_dbt:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: "{{ env_var('SUPABASE_HOST') }}"
+      port: "{{ env_var('SUPABASE_PORT', 5432) | as_number }}"
+      user: "{{ env_var('SUPABASE_USER') }}"
+      password: "{{ env_var('SUPABASE_PASSWORD') }}"
+      dbname: "{{ env_var('SUPABASE_DB', 'postgres') }}"
+      schema: analytics_fpl
+      threads: 4
