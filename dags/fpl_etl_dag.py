@@ -1,6 +1,7 @@
 # This airflow dag takes data from the FPL API, cleans it and runs it through the optimizer functions
 
 import logging
+import os
 from datetime import timedelta
 
 import pandas as pd
@@ -14,6 +15,7 @@ import fpl_optimizer_functions as fpl
 import raw_players_data_upload as upload
 import raw_fixtures_data_upload as fixtures_upload
 
+from airflow.providers.standard.operators.bash import BashOperator
 from airflow.providers.standard.operators.python import PythonOperator
 from airflow.sdk import DAG
 
@@ -85,6 +87,16 @@ extract_and_load_fixtures = PythonOperator(
     dag=fpl_etl,
 )
 
+################################# dbt models #################################
+
+DBT_PROJECT_DIR = os.environ.get('DBT_PROJECT_DIR', '/opt/airflow/fpl_dbt')
+
+dbt_run_all = BashOperator(
+    task_id='dbt_run_all',
+    bash_command=f'dbt run --project-dir {DBT_PROJECT_DIR} --profiles-dir {DBT_PROJECT_DIR}',
+    dag=fpl_etl,
+)
+
 ################################# squad optimizer function #################################
 
 def squad_optimizer():
@@ -133,5 +145,4 @@ load_opt_squad = PythonOperator(
 
 ################################# Task pipeline #################################
 
-extract_and_load >> load_opt_squad
-extract_and_load_fixtures 
+[extract_and_load, extract_and_load_fixtures] >> dbt_run_all >> load_opt_squad
