@@ -135,7 +135,7 @@ def optimum_by_position(eligible_players, maximum_cost, opt_metric, position, co
     player_values = adjust_player_values(pos_df[opt_metric].fillna(0).tolist())
 
     empty_cols = [
-        'first_name', 'second_name', 'name', 'team_name', 'team_short_name',
+        'first_name', 'second_name', 'name', 'team_name', 'image_path', 'team_short_name',
         'position', 'selected_by_percent', 'cost', 'total_points', opt_metric
     ]
 
