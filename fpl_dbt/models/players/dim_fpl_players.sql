@@ -24,17 +24,21 @@ select
     ,e.red_cards
     ,e.saves
     ,e.bonus
+    ,e.defensive_contribution
     ,e.transfers_in
     ,e.starts
     ,e.influence
     ,e.creativity
     ,e.threat
     ,e.ict_index
+    ,e.expected_goals
+    ,e.expected_assists
+    ,e.ep_next as expected_points_next_gw
     ,rank() over (order by e.total_points desc) as total_points_rank
-    ,rank() over (order by e.form desc) as form_percentile
-    ,rank() over (order by e.goals_scored desc) as goals_scored_percentile
-    ,rank() over (order by e.assists desc) as assists_percentile
-    ,rank() over (order by e.clean_sheets desc) as clean_sheets_percentile
+    ,rank() over (order by e.form desc) as form_rank
+    ,rank() over (order by e.goals_scored desc) as goals_scored_rank
+    ,rank() over (order by e.assists desc) as assists_rank
+    ,rank() over (order by e.clean_sheets desc) as clean_sheets_rank
 from
     {{ source('raw_fpl', 'elements') }} as e
     left join {{ source('raw_fpl', 'teams') }} as t
