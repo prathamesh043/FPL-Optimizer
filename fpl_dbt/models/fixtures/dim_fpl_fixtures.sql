@@ -12,6 +12,7 @@ select
     ,f.team_a_difficulty as away_team_fdr
     ,f.minutes
     ,f.finished as is_finished
+    ,now() at time zone 'Europe/Berlin' as last_updated_ts
 from
     {{ source('raw_fpl', 'fixtures') }} as f
     left join {{ source('raw_fpl', 'teams') }} as th

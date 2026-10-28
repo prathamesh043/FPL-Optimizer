@@ -39,6 +39,7 @@ select
     ,rank() over (order by e.goals_scored desc) as goals_scored_rank
     ,rank() over (order by e.assists desc) as assists_rank
     ,rank() over (order by e.clean_sheets desc) as clean_sheets_rank
+    ,now() at time zone 'Europe/Berlin' as last_updated_ts
 from
     {{ source('raw_fpl', 'elements') }} as e
     left join {{ source('raw_fpl', 'teams') }} as t

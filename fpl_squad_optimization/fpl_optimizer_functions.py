@@ -136,7 +136,8 @@ def optimum_by_position(eligible_players, maximum_cost, opt_metric, position, co
 
     empty_cols = [
         'first_name', 'second_name', 'name', 'team_name', 'image_path', 'team_short_name',
-        'position', 'selected_by_percent', 'cost', 'total_points', opt_metric
+        'position', 'selected_by_percent', 'cost', 'total_points', opt_metric,
+        'last_updated_ts'
     ]
 
     if len(players) < count:
