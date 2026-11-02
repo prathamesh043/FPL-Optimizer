@@ -34,11 +34,19 @@ select
     ,e.expected_goals
     ,e.expected_assists
     ,e.ep_next as expected_points_next_gw
-    ,rank() over (order by e.total_points desc) as total_points_rank
-    ,rank() over (order by e.form desc) as form_rank
-    ,rank() over (order by e.goals_scored desc) as goals_scored_rank
-    ,rank() over (order by e.assists desc) as assists_rank
-    ,rank() over (order by e.clean_sheets desc) as clean_sheets_rank
+    ,rank() over (partition by e.element_type order by e.total_points desc) as total_points_rank
+    ,rank() over (partition by e.element_type order by e.form desc) as form_rank
+    ,rank() over (partition by e.element_type order by e.goals_scored desc) as goals_scored_rank
+    ,rank() over (partition by e.element_type order by e.assists desc) as assists_rank
+    ,rank() over (partition by e.element_type order by e.clean_sheets desc) as clean_sheets_rank
+    ,rank() over (partition by e.element_type order by e.goals_conceded asc) as goals_conceded_rank
+    ,rank() over (partition by e.element_type order by e.expected_goals desc) as expected_goals_rank
+    ,rank() over (partition by e.element_type order by e.expected_assists desc) as expected_assists_rank
+    ,rank() over (partition by e.element_type order by e.defensive_contribution desc) as defensive_contribution_rank
+    ,rank() over (partition by e.element_type order by e.influence desc) as influence_rank
+    ,rank() over (partition by e.element_type order by e.creativity desc) as creativity_rank
+    ,rank() over (partition by e.element_type order by e.threat desc) as threat_rank
+    ,rank() over (partition by e.element_type order by e.ict_index desc) as ict_index_rank
     ,now() at time zone 'Europe/Berlin' as last_updated_ts
 from
     {{ source('raw_fpl', 'elements') }} as e
