@@ -1,0 +1,8 @@
+requests==2.34.2
+pandas==2.1.4
+numpy==1.26.4
+psycopg2-binary==2.9.13
+sqlalchemy==1.4.54
+python-dotenv==1.2.4
+dbt-core==1.12.6
+dbt-postgres==1.11.0
