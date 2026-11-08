@@ -12,6 +12,7 @@ select
             when h.starts = 1 then true
         end as is_start
     ,h.minutes
+    ,h.total_points
     ,h.goals_scored
     ,h.assists
     ,h.clean_sheets
