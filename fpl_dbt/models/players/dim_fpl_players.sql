@@ -47,6 +47,8 @@ select
     ,rank() over (partition by e.element_type order by e.creativity desc) as creativity_rank
     ,rank() over (partition by e.element_type order by e.threat desc) as threat_rank
     ,rank() over (partition by e.element_type order by e.ict_index desc) as ict_index_rank
+    ,rank() over (partition by e.element_type order by e.points_per_game desc) as points_per_game_rank
+    ,rank() over (partition by e.element_type order by e.bonus desc) as bonus_rank
     ,now() at time zone 'Europe/Berlin' as last_updated_ts
 from
     {{ source('raw_fpl', 'elements') }} as e
