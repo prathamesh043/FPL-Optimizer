@@ -39,7 +39,9 @@ select
     ,rank() over (partition by e.element_type order by e.goals_scored desc) as goals_scored_rank
     ,rank() over (partition by e.element_type order by e.assists desc) as assists_rank
     ,rank() over (partition by e.element_type order by e.clean_sheets desc) as clean_sheets_rank
-    ,rank() over (partition by e.element_type order by e.goals_conceded asc) as goals_conceded_rank
+    ,case when e.minutes > 0 then rank() over (partition by e.element_type, (e.minutes > 0) order by e.goals_conceded asc)
+            else null
+        end as goals_conceded_rank
     ,rank() over (partition by e.element_type order by e.expected_goals desc) as expected_goals_rank
     ,rank() over (partition by e.element_type order by e.expected_assists desc) as expected_assists_rank
     ,rank() over (partition by e.element_type order by e.defensive_contribution desc) as defensive_contribution_rank
@@ -49,6 +51,7 @@ select
     ,rank() over (partition by e.element_type order by e.ict_index desc) as ict_index_rank
     ,rank() over (partition by e.element_type order by e.points_per_game desc) as points_per_game_rank
     ,rank() over (partition by e.element_type order by e.bonus desc) as bonus_rank
+    ,rank() over (partition by e.element_type order by e.saves desc) as saves_rank
     ,now() at time zone 'Europe/Berlin' as last_updated_ts
 from
     {{ source('raw_fpl', 'elements') }} as e
