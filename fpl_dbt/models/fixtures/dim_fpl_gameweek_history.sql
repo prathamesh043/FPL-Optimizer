@@ -29,6 +29,7 @@ select
     ,h.defensive_contribution
     ,h.expected_goals
     ,h.expected_assists
+    ,now() at time zone 'Europe/Berlin' as last_updated_ts
 from
     {{ source('raw_fpl', 'history') }} as h
     left join {{ ref('dim_fpl_players') }} as p
