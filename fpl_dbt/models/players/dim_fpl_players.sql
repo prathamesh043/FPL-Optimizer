@@ -3,6 +3,7 @@ select
     ,e.first_name
     ,e.second_name
     ,e.web_name as name
+    ,e.team as team_id
     ,t.name as team_name
     ,'/'||replace(lower(t.name), ' ', '_')||'.svg' as image_path
     ,t.short_name as team_short_name
