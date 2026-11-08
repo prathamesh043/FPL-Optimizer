@@ -5,15 +5,13 @@ import os
 from datetime import timedelta
 
 import pandas as pd
-import pandas.io.sql as sqlio
 import pendulum
-import psycopg2
-from sqlalchemy import create_engine
 
 import config
 import fpl_optimizer_functions as fpl
 import raw_players_data_upload as upload
 import raw_fixtures_data_upload as fixtures_upload
+import raw_history_data_upload as history_upload
 
 from airflow.providers.standard.operators.bash import BashOperator
 from airflow.providers.standard.operators.python import PythonOperator
@@ -41,6 +39,18 @@ fpl_etl = DAG(
     catchup=False,
 )
 
+################################# Supabase connection #################################
+
+def get_engine():
+    """Each task runs in its own process, so every task builds its own engine."""
+    return upload.make_engine(
+        config.supabase_fpl_username,
+        config.supabase_fpl_password,
+        config.supabase_fpl_host,
+        config.supabase_fpl_port,
+        config.supabase_fpl_db,
+    )
+
 ################################# python function to extract FPL data #################################
 
 def fpl_extract_and_load():
@@ -48,15 +58,8 @@ def fpl_extract_and_load():
     # fetch every table in the bootstrap-static response as-is (transformations happen in dbt)
     raw_tables = upload.fetch_raw_tables()
 
-    # connect to Supabase and replace raw_fpl.<table> for each API table
-    engine = upload.make_engine(
-        config.supabase_fpl_username,
-        config.supabase_fpl_password,
-        config.supabase_fpl_host,
-        config.supabase_fpl_port,
-        config.supabase_fpl_db,
-    )
-    upload.load_raw_tables(raw_tables, engine)
+    # replace raw_fpl.<table> for each API table
+    upload.load_raw_tables(raw_tables, get_engine())
     logger.info("Loaded raw tables to %s: %s", upload.RAW_SCHEMA, ', '.join(raw_tables))
 
 ################################# Task 1: Extract and load #################################
@@ -71,19 +74,25 @@ extract_and_load = PythonOperator(
 
 def fpl_fixtures_extract_and_load():
     fixtures_df = fixtures_upload.fetch_raw_fixtures()
-    engine = fixtures_upload.make_engine(
-        config.supabase_fpl_username,
-        config.supabase_fpl_password,
-        config.supabase_fpl_host,
-        config.supabase_fpl_port,
-        config.supabase_fpl_db,
-    )
-    fixtures_upload.load_raw_fixtures(fixtures_df, engine)
+    fixtures_upload.load_raw_fixtures(fixtures_df, get_engine())
     logger.info("Loaded %d fixtures to %s.%s", len(fixtures_df), fixtures_upload.RAW_SCHEMA, fixtures_upload.FIXTURES_TABLE)
 
 extract_and_load_fixtures = PythonOperator(
     task_id='extract_and_load_fixtures',
     python_callable=fpl_fixtures_extract_and_load,
+    dag=fpl_etl,
+)
+
+################################# Task: Load raw player history #################################
+
+def fpl_history_extract_and_load():
+    history_df = history_upload.fetch_raw_history()
+    history_upload.load_raw_history(history_df, get_engine())
+    logger.info("Loaded %d history rows to %s.%s", len(history_df), history_upload.RAW_SCHEMA, history_upload.HISTORY_TABLE)
+
+extract_and_load_history = PythonOperator(
+    task_id='extract_and_load_history',
+    python_callable=fpl_history_extract_and_load,
     dag=fpl_etl,
 )
 
@@ -100,34 +109,13 @@ dbt_run_all = BashOperator(
 ################################# squad optimizer function #################################
 
 def squad_optimizer():
-
-    # connect to Supabase
-    user = config.supabase_fpl_username
-    password = config.supabase_fpl_password
-    host = config.supabase_fpl_host
-    port = config.supabase_fpl_port
-    database = config.supabase_fpl_db
-
-    conn = psycopg2.connect(
-        database=database, user=user, password=password, host=host, port=port
-    )
-
-    # Setting auto commit true
-    conn.autocommit = True
+    engine = get_engine()
 
     # save query output as dataframe
-    sql = "select * from analytics_fpl.dim_fpl_players;"
-    eligible_players = sqlio.read_sql_query(sql, conn)
-
-    # get the optimized squad
-    squad = fpl.squad_optimizer(eligible_players, 'total_points')
+    eligible_players = pd.read_sql('select * from analytics_fpl.dim_fpl_players;', engine)
 
     # metrics for which the squad is to be optimized
     optimizing_metrics = ['points_per_game','bonus','total_points','ict_index','form']
-
-    # sqlalchemy engine
-    engine_url = 'postgresql://' + user + ':' + password + '@' + host + '/' + database
-    engine = create_engine(engine_url)
 
     # Create individual tables for each metric
     for metric in optimizing_metrics:
@@ -145,4 +133,4 @@ load_opt_squad = PythonOperator(
 
 ################################# Task pipeline #################################
 
-[extract_and_load, extract_and_load_fixtures] >> dbt_run_all >> load_opt_squad
+[extract_and_load, extract_and_load_fixtures, extract_and_load_history] >> dbt_run_all >> load_opt_squad
