@@ -96,4 +96,6 @@ sources:
                   arguments:
                     to: source('raw_fpl', 'teams')
                     field: id
-
+      
+      - name: history
+        description: One row per fixture per player, with their Gameweek history for the season.
