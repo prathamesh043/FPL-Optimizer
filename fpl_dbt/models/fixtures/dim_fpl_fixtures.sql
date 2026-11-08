@@ -1,7 +1,7 @@
 select
     f.id as fixture_id
-    ,f.kickoff_time as kickoff_ts
-    ,f.kickoff_time::date as kickoff_dt
+    ,f.kickoff_time::timestamptz at time zone 'Europe/Berlin' as kickoff_ts
+    ,(f.kickoff_time::timestamptz at time zone 'Europe/Berlin')::date as kickoff_dt
     ,th.name as home_team_name
     ,th.short_name as home_team_name_short
     ,f.team_h_score as home_team_score
